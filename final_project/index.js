@@ -1,22 +1,27 @@
-const express = require('express');
-const jwt = require('jsonwebtoken');
-const session = require('express-session')
-const customer_routes = require('./router/auth_users.js').authenticated;
-const genl_routes = require('./router/general.js').general;
+public_users.get('/title/:title',function (req, res) {
+  const title = req.params.title;
+  const bookKeys = Object.keys(books);
+  const matchingBooks = [];
 
-const app = express();
+  let titlebooks = new Promise((resolve, reject) => {
+    bookKeys.forEach((bookKey) => {
+      const book = books[bookKey];
+      if (book.title === title) {
+        matchingBooks.push(book);
+      }
+    });
 
-app.use(express.json());
+    if (matchingBooks.length > 0) {
+      resolve(matchingBooks);
+    } else {
+      reject(new Error("book not found"));
+    }
+  });
 
-app.use("/customer",session({secret:"fingerprint_customer",resave: true, saveUninitialized: true}))
-
-app.use("/customer/auth/*", function auth(req,res,next){
-//Write the authenication mechanism here
-});
- 
-const PORT =5000;
-
-app.use("/customer", customer_routes);
-app.use("/", genl_routes);
-
-app.listen(PORT,()=>console.log("Server is running"));
+titlebooks.then((books) => {
+      res.send(books);
+    })
+titlebooks.catch((error) => {
+      res.status(404).send(error.message);
+    });
+}); 
